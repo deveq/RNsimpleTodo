@@ -6,6 +6,27 @@ import { Platform, Alert } from 'react-native';
 //삭제 기능을 사용하기 위해 lodash를 사용.
 import _ from 'lodash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import produce from 'immer';
+ 
+
+const obj = { a: 1, b: 2};
+const newObj = produce( obj, draft => {
+  draft.b = 'b';
+  draft.c = [];
+});
+
+const complexData = {
+  title: '',
+  children : [
+    {
+      subTitle: ''
+    }
+  ]
+}
+
+const newComplexData = produce(complexData, draft => {
+  draft.children[0].subTitle = 'new title';
+});
 
 // AsyncStorage.setItem('test', 'test value')
 //   .then( () => {
@@ -130,7 +151,13 @@ export default function App() {
             list.map(item => {
               return (
                 <TodoItem key={item.id}>
-                  <Check>
+                  <Check onPress={()=> {
+                    const newList = produce(list, draft => {
+                      const index = list.indexOf(item);
+                      draft[index].done = !list[index].done;
+                    });
+                    store(newList);
+                  }}>
                     <CheckIcon>
                       {item.done ? '✅' : '☑️'}
                     </CheckIcon>
@@ -138,8 +165,7 @@ export default function App() {
                   <TodoItemText>{item.todo}</TodoItemText>
                   <TodoItemButton title="삭제" onPress={() => {
                     const rejectedList = _.reject(list, element => element.id === item.id)
-                    // const aa = _.remove(lifst, (listItem)=> {listItem.id === item.id})
-                    store(rejectedList);
+                    // const aa = _.remove(lifst, 
                     // store(aa);
                   }} />
                 </TodoItem>
